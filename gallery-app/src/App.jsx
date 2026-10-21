@@ -4,7 +4,9 @@ import "./style.css";
 const API_URL = "https://photo-app-27wa.onrender.com/api/media";
 const GALLERY_URL = "https://gallery-frontend-yd9j.onrender.com";
 
-const API = "https://photo-app-27wa.onrender.com";
+const API = import.meta.env.DEV
+  ? "http://localhost:3001"
+  : "https://photo-app-27wa.onrender.com";
 
 export default function App() {
   const [media, setMedia] = useState([]);
