@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./style.css";
 
-const API_URL = "http://localhost:3001/api/media";
-const GALLERY_URL = "http://localhost:5175/";
-
+const API_URL = "https://photo-app-27wa.onrender.com/api/media";
 export default function App() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
