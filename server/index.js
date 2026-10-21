@@ -1,4 +1,4 @@
-
+```javascript
 import express from "express";
 import cors from "cors";
 import multer from "multer";
@@ -155,7 +155,7 @@ app.post("/api/media", upload.single("file"), (req, res) => {
       originalName: req.file.originalname,
       mimetype: req.file.mimetype,
       type: isVideo ? "video" : "image",
-      url: `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`,
+      url: `https://${req.get("host")}/uploads/${req.file.filename}`,
       createdAt: new Date().toISOString(),
     };
 
@@ -208,3 +208,4 @@ app.delete("/api/media/:id", (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Backend running on port ${PORT}`);
 });
+```
