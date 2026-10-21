@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./style.css";
 
-// Dynamic API URL detection: Agar localhost par hain toh local port, warna Render backend
+const API_URL = "https://photo-app-27wa.onrender.com/api/media";
+const GALLERY_URL = "https://gallery-frontend-yd9j.onrender.com";
+
 const API = import.meta.env.DEV
-  ? `http://${window.location.hostname}:3001`
+  ? "http://localhost:3001"
   : "https://photo-app-27wa.onrender.com";
 
 export default function App() {
@@ -20,6 +22,7 @@ export default function App() {
         params.set("q", query.trim());
       }
 
+      // Agar server-side filtering support nahi hai toh hum frontend par filter karenge
       const response = await fetch(
         `${API}/api/media?${params.toString()}`
       );
@@ -77,17 +80,6 @@ export default function App() {
     }
   }
 
-  // Helper to handle dynamic camera link routing for phone/laptop
-  function handleCameraRedirect(e) {
-    e.preventDefault();
-    if (import.meta.env.DEV) {
-      window.location.href = `http://${window.location.hostname}:5174/`;
-    } else {
-      // ⚠️ Apne deployed Camera app ka URL yahan update karein agar alag domain par hai
-      window.location.href = "https://your-camera-app-url.onrender.com"; 
-    }
-  }
-
   return (
     <main className="gallery-page">
       <header>
@@ -96,7 +88,7 @@ export default function App() {
           <p>Your photos and videos in one place.</p>
         </div>
 
-        <a href="#" onClick={handleCameraRedirect}>
+        <a href="http://localhost:5174/">
           Open Camera →
         </a>
       </header>
