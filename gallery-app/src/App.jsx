@@ -81,11 +81,10 @@ export default function App() {
   function handleCameraRedirect(e) {
     e.preventDefault();
     if (import.meta.env.DEV) {
-      // Local development mein phone ke IP ya localhost ke hisab se port 5174 par redirect karein
       window.location.href = `http://${window.location.hostname}:5174/`;
     } else {
-      // Production / Deployed URL yahan lagayein agar camera alag deployed ho
-      window.location.href = "/"; // ya camera app ka deployed URL
+      // ⚠️ Apne deployed Camera app ka URL yahan update karein agar alag domain par hai
+      window.location.href = "https://your-camera-app-url.onrender.com"; 
     }
   }
 
