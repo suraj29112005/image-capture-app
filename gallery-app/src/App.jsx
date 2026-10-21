@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./style.css";
 
-// Dynamic API URL detection: Agar localhost par hain toh local port, warna Render backend
+// Dynamic API URL detection: Localhost ya phone ke IP par local port, warna Render backend
 const API = import.meta.env.DEV
   ? `http://${window.location.hostname}:3001`
   : "https://photo-app-27wa.onrender.com";
@@ -77,14 +77,15 @@ export default function App() {
     }
   }
 
-  // Helper to handle dynamic camera link routing for phone/laptop
+  // Gallery se Camera (port 5174) par switch karne ke liye handler
   function handleCameraRedirect(e) {
     e.preventDefault();
     if (import.meta.env.DEV) {
+      // Local development: Camera port 5174 par redirect karega
       window.location.href = `http://${window.location.hostname}:5174/`;
     } else {
-      // ⚠️ Apne deployed Camera app ka URL yahan update karein agar alag domain par hai
-      window.location.href = "https://your-camera-app-url.onrender.com"; 
+      // Production (Render): Deployed Camera app ka live URL daalein
+      window.location.href = "https://photo-app-27wa.onrender.com"; 
     }
   }
 
