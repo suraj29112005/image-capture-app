@@ -3,6 +3,7 @@ import "./style.css";
 
 const API_URL = "https://photo-app-27wa.onrender.com/api/media";
 const GALLERY_URL = "https://gallery-frontend-yd9j.onrender.com";
+
 export default function App() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -25,6 +26,7 @@ export default function App() {
   const [showGrid, setShowGrid] = useState(false);
   const [timerSetting, setTimerSetting] = useState("0"); // "0" means off, "3" means 3 seconds
   const [countdown, setCountdown] = useState(null);
+  const [aspectRatio, setAspectRatio] = useState("auto"); // "auto", "4:3", "1:1", "16:9"
 
   useEffect(() => {
     let mounted = true;
@@ -138,8 +140,45 @@ export default function App() {
       return;
     }
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    const videoWidth = video.videoWidth;
+    const videoHeight = video.videoHeight;
+
+    let sx = 0;
+    let sy = 0;
+    let sWidth = videoWidth;
+    let sHeight = videoHeight;
+
+    // Calculate cropping based on selected aspect ratio
+    if (aspectRatio === "4:3") {
+      const targetRatio = 4 / 3;
+      const currentRatio = videoWidth / videoHeight;
+      if (currentRatio > targetRatio) {
+        sWidth = videoHeight * targetRatio;
+        sx = (videoWidth - sWidth) / 2;
+      } else {
+        sHeight = videoWidth / targetRatio;
+        sy = (videoHeight - sHeight) / 2;
+      }
+    } else if (aspectRatio === "1:1") {
+      const size = Math.min(videoWidth, videoHeight);
+      sx = (videoWidth - size) / 2;
+      sy = (videoHeight - size) / 2;
+      sWidth = size;
+      sHeight = size;
+    } else if (aspectRatio === "16:9") {
+      const targetRatio = 16 / 9;
+      const currentRatio = videoWidth / videoHeight;
+      if (currentRatio > targetRatio) {
+        sWidth = videoHeight * targetRatio;
+        sx = (videoWidth - sWidth) / 2;
+      } else {
+        sHeight = videoWidth / targetRatio;
+        sy = (videoHeight - sHeight) / 2;
+      }
+    }
+
+    canvas.width = sWidth;
+    canvas.height = sHeight;
 
     const context = canvas.getContext("2d");
     if (!context) {
@@ -153,7 +192,7 @@ export default function App() {
     if (filterEffect === "invert") filterString += " invert(100%)";
     
     context.filter = filterString;
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
 
     canvas.toBlob(
       async (blob) => {
@@ -274,6 +313,20 @@ export default function App() {
     return f;
   };
 
+  // Maps aspect ratio state to CSS container styling
+  const getAspectRatioStyle = () => {
+    switch (aspectRatio) {
+      case "4:3":
+        return { aspectRatio: "4 / 3", overflow: "hidden" };
+      case "1:1":
+        return { aspectRatio: "1 / 1", overflow: "hidden" };
+      case "16:9":
+        return { aspectRatio: "16 / 9", overflow: "hidden" };
+      default:
+        return {}; // Auto / Full
+    }
+  };
+
   return (
     <div className="app">
       <h1>Camera App</h1>
@@ -300,7 +353,7 @@ export default function App() {
         </header>
 
         {/* Camera Preview */}
-        <div className="camera-view">
+        <div className="camera-view" style={getAspectRatioStyle()}>
           <video
             ref={videoRef}
             autoPlay
@@ -309,6 +362,9 @@ export default function App() {
             style={{
               transform: `scale(${zoom})`,
               filter: getVideoFilterStyle(),
+              objectFit: aspectRatio === "auto" ? "cover" : "cover",
+              width: "100%",
+              height: "100%",
             }}
           />
 
@@ -346,8 +402,21 @@ export default function App() {
 
         <canvas ref={canvasRef} hidden />
 
-        {/* Horizontal Advanced Controls Bar (Zoom, Brightness, Contrast, Filter, Grid, Timer) */}
+        {/* Horizontal Advanced Controls Bar (Zoom, Brightness, Contrast, Filter, Grid, Timer, Aspect Ratio) */}
         <div className="horizontal-controls-bar">
+          <div className="control-pill">
+            <label>Ratio:</label>
+            <select
+              value={aspectRatio}
+              onChange={(e) => setAspectRatio(e.target.value)}
+            >
+              <option value="auto">Auto / Full</option>
+              <option value="4:3">4:3</option>
+              <option value="1:1">1:1</option>
+              <option value="16:9">16:9</option>
+            </select>
+          </div>
+
           <div className="control-pill">
             <label>Zoom: {zoom}x</label>
             <input
