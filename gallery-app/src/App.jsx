@@ -1,8 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import "./style.css";
-
-const API_URL = "https://photo-app-27wa.onrender.com/api/media";
-const GALLERY_URL = "https://gallery-frontend-yd9j.onrender.com";
 
 const API = import.meta.env.DEV
   ? "http://localhost:3001"
@@ -87,10 +84,6 @@ export default function App() {
           <h1>My Gallery</h1>
           <p>Your photos and videos in one place.</p>
         </div>
-
-        <a href="http://localhost:5174/">
-          Open Camera →
-        </a>
       </header>
 
       {/* Folder / Category Tabs */}

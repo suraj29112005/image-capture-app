@@ -82,22 +82,6 @@ header p {
   margin-top: 4px;
 }
 
-header a {
-  background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
-  color: white;
-  padding: 10px 18px;
-  border-radius: 14px;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  box-shadow: 0 6px 16px rgba(14, 165, 233, 0.3);
-  transition: transform 0.2s ease;
-}
-
-header a:hover {
-  transform: translateY(-2px);
-}
-
 /* Toolbar (Search & Filters) */
 
 .gallery-toolbar {
@@ -178,16 +162,6 @@ header a:hover {
 .empty p {
   color: #94a3b8;
   font-size: 14px;
-}
-
-.empty a {
-  margin-top: 10px;
-  background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 12px;
-  text-decoration: none;
-  font-weight: 600;
 }
 
 /* Media Grid */
