@@ -1,5 +1,23 @@
 [
   {
+    "id": "3e2eefed-05c3-405d-8a92-9fa5e0fc779e",
+    "filename": "957f6f54-f3f0-4c45-a256-7b8e1387a6c2.webm",
+    "originalName": "video-1792569170502.webm",
+    "mimetype": "video/webm",
+    "type": "video",
+    "url": "http://localhost:3001/uploads/957f6f54-f3f0-4c45-a256-7b8e1387a6c2.webm",
+    "createdAt": "2026-10-21T07:52:50.548Z"
+  },
+  {
+    "id": "7ba72ebd-ef47-4bf7-ad2d-beb6034c4ce0",
+    "filename": "f0eeaf68-c6c0-4438-8c1e-709ee7e2106b.jpg",
+    "originalName": "photo-1792569158637.jpg",
+    "mimetype": "image/jpeg",
+    "type": "image",
+    "url": "http://localhost:3001/uploads/f0eeaf68-c6c0-4438-8c1e-709ee7e2106b.jpg",
+    "createdAt": "2026-10-21T07:52:38.664Z"
+  },
+  {
     "id": "692a762b-8dc0-40f6-843b-17801acde038",
     "filename": "2f2ff805-d472-4266-83e7-a19096766302.jpg",
     "originalName": "photo-1792565141809.jpg",

@@ -16,7 +16,6 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const BACKEND_URL = "https://photo-app-27wa.onrender.com";
 
-// Cloudinary reads CLOUDINARY_URL from environment variables.
 cloudinary.config();
 
 const uploadsDir = path.join(__dirname, "uploads");
@@ -78,8 +77,13 @@ function getMediaType(item) {
   ).toLowerCase();
 
   const videoExtensions = [
-    ".webm", ".mp4", ".mov", ".mkv",
-    ".avi", ".ogv", ".m4v",
+    ".webm",
+    ".mp4",
+    ".mov",
+    ".mkv",
+    ".avi",
+    ".ogv",
+    ".m4v",
   ];
 
   if (
@@ -113,13 +117,69 @@ app.get("/", (req, res) => {
   res.json({ message: "Camera backend is running" });
 });
 
-// Get media with search and type filters
-app.get("/api/media", (req, res) => {
+// Get local media and existing Cloudinary media.
+// This route does not upload files or modify media.json.
+app.get("/api/media", async (req, res) => {
   try {
-    let media = readMedia();
+    const localMedia = readMedia();
+    const cloudinaryMedia = [];
+    const seenPublicIds = new Set();
 
-    const query = String(req.query.q || "").trim().toLowerCase();
-    const type = String(req.query.type || "all").trim().toLowerCase();
+    for (const item of localMedia) {
+      if (
+        item.filename &&
+        item.url &&
+        item.url.includes("res.cloudinary.com")
+      ) {
+        seenPublicIds.add(item.filename);
+      }
+    }
+
+    for (const resourceType of ["image", "video"]) {
+      let nextCursor;
+
+      do {
+        const result = await cloudinary.api.resources({
+          type: "upload",
+          resource_type: resourceType,
+          prefix: "capture-suite/",
+          max_results: 100,
+          ...(nextCursor ? { next_cursor: nextCursor } : {}),
+        });
+
+        for (const resource of result.resources || []) {
+          if (seenPublicIds.has(resource.public_id)) {
+            continue;
+          }
+
+          seenPublicIds.add(resource.public_id);
+
+          const format = resource.format || "";
+          const filename = resource.public_id.split("/").pop();
+
+          cloudinaryMedia.push({
+            id: `cloudinary_${Buffer.from(
+              resource.public_id
+            ).toString("base64url")}`,
+            filename: resource.public_id,
+            originalName: format
+              ? `${filename}.${format}`
+              : filename,
+            mimetype: resourceType === "video"
+              ? `video/${format || "mp4"}`
+              : `image/${format || "jpeg"}`,
+            type: resourceType,
+            url: resource.secure_url,
+            cloudinaryResourceType: resourceType,
+            createdAt: resource.created_at,
+          });
+        }
+
+        nextCursor = result.next_cursor;
+      } while (nextCursor);
+    }
+
+    let media = [...localMedia, ...cloudinaryMedia];
 
     media = media.map((item) => {
       let url = item.url || "";
@@ -140,9 +200,12 @@ app.get("/api/media", (req, res) => {
       return {
         ...item,
         url,
-        type: getMediaType(item),
+        type: item.type || getMediaType(item),
       };
     });
+
+    const query = String(req.query.q || "").trim().toLowerCase();
+    const type = String(req.query.type || "all").trim().toLowerCase();
 
     if (query) {
       media = media.filter((item) => {
@@ -170,7 +233,7 @@ app.get("/api/media", (req, res) => {
   }
 });
 
-// Upload photo or video to Cloudinary
+// Upload photo or video to Cloudinary.
 app.post("/api/media", upload.single("file"), async (req, res) => {
   const tempFile = req.file?.path;
 
@@ -214,7 +277,7 @@ app.post("/api/media", upload.single("file"), async (req, res) => {
   }
 });
 
-// Secure restore endpoint: preserves IDs and uploads recovered files to Cloudinary
+// Secure restore endpoint: preserves IDs and uploads recovered files.
 app.post(
   "/api/restore",
   (req, res, next) => {
@@ -307,19 +370,70 @@ app.post(
   }
 );
 
-// Delete media from Cloudinary and metadata
+// Delete media from Cloudinary and metadata.
 app.delete("/api/media/:id", async (req, res) => {
   try {
     const media = readMedia();
+    const requestedId = req.params.id;
+
+    // Handle records discovered directly from Cloudinary.
+    if (requestedId.startsWith("cloudinary_")) {
+      const encodedId = requestedId.slice("cloudinary_".length);
+      const publicId = Buffer.from(encodedId, "base64url").toString("utf8");
+
+      if (!publicId.startsWith("capture-suite/")) {
+        return res.status(400).json({
+          error: "Invalid Cloudinary media ID",
+        });
+      }
+
+      let resourceType = null;
+
+      for (const candidate of ["image", "video"]) {
+        try {
+          await cloudinary.api.resource(publicId, {
+            resource_type: candidate,
+            type: "upload",
+          });
+
+          resourceType = candidate;
+          break;
+        } catch {
+          // Try the other resource type.
+        }
+      }
+
+      if (!resourceType) {
+        return res.status(404).json({
+          error: "Cloudinary media not found",
+        });
+      }
+
+      const result = await cloudinary.uploader.destroy(publicId, {
+        resource_type: resourceType,
+        type: "upload",
+      });
+
+      if (result.result !== "ok" && result.result !== "not found") {
+        return res.status(502).json({
+          error: "Cloudinary could not confirm deletion",
+        });
+      }
+
+      return res.json({
+        message: "Cloudinary media deleted successfully",
+      });
+    }
+
+    // Handle records already saved in media.json.
     const item = media.find(
-      (entry) => String(entry.id) === req.params.id
+      (entry) => String(entry.id) === requestedId
     );
 
     if (!item) {
       return res.status(404).json({ error: "Media not found" });
     }
 
-    // Delete from Cloudinary when this record has a Cloudinary public ID.
     if (
       item.filename &&
       item.url &&
@@ -328,11 +442,17 @@ app.delete("/api/media/:id", async (req, res) => {
       const resourceType =
         item.cloudinaryResourceType || getCloudinaryResourceType(item);
 
-      await cloudinary.uploader.destroy(item.filename, {
+      const result = await cloudinary.uploader.destroy(item.filename, {
         resource_type: resourceType,
+        type: "upload",
       });
+
+      if (result.result !== "ok" && result.result !== "not found") {
+        return res.status(502).json({
+          error: "Cloudinary could not confirm deletion",
+        });
+      }
     } else if (item.filename) {
-      // Legacy files may still be stored locally.
       const filePath = path.join(
         uploadsDir,
         path.basename(item.filename)
@@ -344,7 +464,7 @@ app.delete("/api/media/:id", async (req, res) => {
     }
 
     const updatedMedia = media.filter(
-      (entry) => String(entry.id) !== req.params.id
+      (entry) => String(entry.id) !== requestedId
     );
 
     saveMedia(updatedMedia);
