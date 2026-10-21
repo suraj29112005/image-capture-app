@@ -4,8 +4,10 @@ import cors from "cors";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import os from "os";
 import { fileURLToPath } from "url";
 import { randomUUID } from "crypto";
+import { v2 as cloudinary } from "cloudinary";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,8 +16,12 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const BACKEND_URL = "https://photo-app-27wa.onrender.com";
 
+// Cloudinary reads CLOUDINARY_URL from environment variables.
+cloudinary.config();
+
 const uploadsDir = path.join(__dirname, "uploads");
 const mediaFile = path.join(__dirname, "media.json");
+const tempDir = os.tmpdir();
 
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -31,7 +37,7 @@ app.use("/uploads", express.static(uploadsDir));
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadsDir);
+    cb(null, tempDir);
   },
   filename: (req, file, cb) => {
     const extension = path.extname(file.originalname);
@@ -86,6 +92,23 @@ function getMediaType(item) {
   return "image";
 }
 
+function removeTempFile(filePath) {
+  if (filePath && fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+  }
+}
+
+function getCloudinaryResourceType(item) {
+  return getMediaType(item) === "video" ? "video" : "image";
+}
+
+async function uploadToCloudinary(filePath, item) {
+  return cloudinary.uploader.upload(filePath, {
+    resource_type: getCloudinaryResourceType(item),
+    folder: "capture-suite",
+  });
+}
+
 app.get("/", (req, res) => {
   res.json({ message: "Camera backend is running" });
 });
@@ -103,8 +126,13 @@ app.get("/api/media", (req, res) => {
 
       if (url.startsWith("http://localhost:3001/")) {
         url = url.replace("http://localhost:3001", BACKEND_URL);
-      } else if (url.startsWith("http://photo-app-27wa.onrender.com/")) {
-        url = url.replace("http://photo-app-27wa.onrender.com", BACKEND_URL);
+      } else if (
+        url.startsWith("http://photo-app-27wa.onrender.com/")
+      ) {
+        url = url.replace(
+          "http://photo-app-27wa.onrender.com",
+          BACKEND_URL
+        );
       } else if (url.startsWith("/uploads/")) {
         url = `${BACKEND_URL}${url}`;
       }
@@ -142,40 +170,51 @@ app.get("/api/media", (req, res) => {
   }
 });
 
-// Upload photo or video
-app.post("/api/media", upload.single("file"), (req, res) => {
+// Upload photo or video to Cloudinary
+app.post("/api/media", upload.single("file"), async (req, res) => {
+  const tempFile = req.file?.path;
+
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const media = readMedia();
     const isVideo = getMediaType({
       originalName: req.file.originalname,
       mimetype: req.file.mimetype,
     }) === "video";
 
+    const result = await uploadToCloudinary(tempFile, {
+      originalName: req.file.originalname,
+      mimetype: req.file.mimetype,
+    });
+
+    const media = readMedia();
+
     const item = {
       id: randomUUID(),
-      filename: req.file.filename,
+      filename: result.public_id,
       originalName: req.file.originalname,
       mimetype: req.file.mimetype,
       type: isVideo ? "video" : "image",
-      url: `${BACKEND_URL}/uploads/${req.file.filename}`,
+      url: result.secure_url,
+      cloudinaryResourceType: result.resource_type,
       createdAt: new Date().toISOString(),
     };
 
     media.unshift(item);
     saveMedia(media);
 
-    res.status(201).json(item);
+    return res.status(201).json(item);
   } catch (error) {
-    console.error("Upload error:", error);
-    res.status(500).json({ error: "Failed to save uploaded media" });
+    console.error("Cloudinary upload error:", error);
+    return res.status(500).json({ error: "Failed to upload media" });
+  } finally {
+    removeTempFile(tempFile);
   }
 });
 
-// Secure restore endpoint for recovering existing local media
+// Secure restore endpoint: preserves IDs and uploads recovered files to Cloudinary
 app.post(
   "/api/restore",
   (req, res, next) => {
@@ -188,10 +227,11 @@ app.post(
     next();
   },
   upload.single("file"),
-  (req, res) => {
+  async (req, res) => {
+    const tempFile = req.file?.path;
+
     try {
       if (!req.file || !req.body.metadata) {
-        if (req.file) fs.unlinkSync(req.file.path);
         return res.status(400).json({
           error: "File and metadata are required",
         });
@@ -202,70 +242,101 @@ app.post(
       try {
         metadata = JSON.parse(req.body.metadata);
       } catch {
-        fs.unlinkSync(req.file.path);
         return res.status(400).json({ error: "Invalid metadata JSON" });
       }
 
       if (!metadata.id) {
-        fs.unlinkSync(req.file.path);
         return res.status(400).json({ error: "Media ID is required" });
       }
+
+      const originalName =
+        metadata.originalName || req.file.originalname;
+
+      const mimetype =
+        metadata.mimetype ||
+        metadata.mimeType ||
+        req.file.mimetype;
+
+      const isVideo = getMediaType({
+        ...metadata,
+        originalName,
+        mimetype,
+      }) === "video";
+
+      const result = await uploadToCloudinary(tempFile, {
+        ...metadata,
+        originalName,
+        mimetype,
+      });
 
       const media = readMedia();
 
       const item = {
         ...metadata,
         id: String(metadata.id),
-        filename: req.file.filename,
-        originalName: metadata.originalName || req.file.originalname,
-        mimetype: metadata.mimetype || req.file.mimetype,
-        type: getMediaType(metadata),
-        url: `${BACKEND_URL}/uploads/${req.file.filename}`,
+        filename: result.public_id,
+        originalName,
+        mimetype,
+        type: isVideo ? "video" : "image",
+        url: result.secure_url,
+        cloudinaryResourceType: result.resource_type,
       };
 
       const existingIndex = media.findIndex(
-        (entry) => entry.id === item.id
+        (entry) => String(entry.id) === item.id
       );
 
       if (existingIndex >= 0) {
-        const oldFilename = media[existingIndex].filename;
-
         media[existingIndex] = item;
-
-        // Remove an old local file only if it is different.
-        if (
-          oldFilename &&
-          oldFilename !== item.filename &&
-          path.basename(oldFilename) !== item.filename
-        ) {
-          const oldPath = path.join(uploadsDir, path.basename(oldFilename));
-          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-        }
       } else {
         media.unshift(item);
       }
 
       saveMedia(media);
-      res.status(201).json({ message: "Media restored", item });
+
+      return res.status(201).json({
+        message: "Media restored to Cloudinary",
+        item,
+      });
     } catch (error) {
       console.error("Restore error:", error);
-      res.status(500).json({ error: "Failed to restore media" });
+      return res.status(500).json({ error: "Failed to restore media" });
+    } finally {
+      removeTempFile(tempFile);
     }
   }
 );
 
-// Delete media
-app.delete("/api/media/:id", (req, res) => {
+// Delete media from Cloudinary and metadata
+app.delete("/api/media/:id", async (req, res) => {
   try {
     const media = readMedia();
-    const item = media.find((entry) => entry.id === req.params.id);
+    const item = media.find(
+      (entry) => String(entry.id) === req.params.id
+    );
 
     if (!item) {
       return res.status(404).json({ error: "Media not found" });
     }
 
-    if (item.filename) {
-      const filePath = path.join(uploadsDir, path.basename(item.filename));
+    // Delete from Cloudinary when this record has a Cloudinary public ID.
+    if (
+      item.filename &&
+      item.url &&
+      item.url.includes("res.cloudinary.com")
+    ) {
+      const resourceType =
+        item.cloudinaryResourceType || getCloudinaryResourceType(item);
+
+      await cloudinary.uploader.destroy(item.filename, {
+        resource_type: resourceType,
+      });
+    } else if (item.filename) {
+      // Legacy files may still be stored locally.
+      const filePath = path.join(
+        uploadsDir,
+        path.basename(item.filename)
+      );
 
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
@@ -273,14 +344,15 @@ app.delete("/api/media/:id", (req, res) => {
     }
 
     const updatedMedia = media.filter(
-      (entry) => entry.id !== req.params.id
+      (entry) => String(entry.id) !== req.params.id
     );
 
     saveMedia(updatedMedia);
-    res.json({ message: "Media deleted successfully" });
+
+    return res.json({ message: "Media deleted successfully" });
   } catch (error) {
     console.error("Delete error:", error);
-    res.status(500).json({ error: "Failed to delete media" });
+    return res.status(500).json({ error: "Failed to delete media" });
   }
 });
 
