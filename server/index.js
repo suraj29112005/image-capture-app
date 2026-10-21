@@ -1,4 +1,3 @@
-```javascript
 import express from "express";
 import cors from "cors";
 import multer from "multer";
@@ -99,10 +98,29 @@ app.get("/api/media", (req, res) => {
     const query = String(req.query.q || "").trim().toLowerCase();
     const type = String(req.query.type || "all").trim().toLowerCase();
 
-    media = media.map((item) => ({
-      ...item,
-      type: getMediaType(item),
-    }));
+    media = media.map((item) => {
+      let url = item.url || "";
+
+      if (url.startsWith("http://localhost:3001/")) {
+        url = url.replace(
+          "http://localhost:3001",
+          "https://photo-app-27wa.onrender.com"
+        );
+      } else if (url.startsWith("http://photo-app-27wa.onrender.com/")) {
+        url = url.replace(
+          "http://photo-app-27wa.onrender.com",
+          "https://photo-app-27wa.onrender.com"
+        );
+      } else if (url.startsWith("/uploads/")) {
+        url = `https://photo-app-27wa.onrender.com${url}`;
+      }
+
+      return {
+        ...item,
+        url,
+        type: getMediaType(item),
+      };
+    });
 
     if (query) {
       media = media.filter((item) => {
@@ -208,4 +226,3 @@ app.delete("/api/media/:id", (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Backend running on port ${PORT}`);
 });
-```
