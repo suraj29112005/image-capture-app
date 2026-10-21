@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 const uploadsDir = path.join(__dirname, "uploads");
 const mediaFile = path.join(__dirname, "media.json");
@@ -24,15 +24,7 @@ if (!fs.existsSync(mediaFile)) {
   fs.writeFileSync(mediaFile, "[]", "utf8");
 }
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5174",
-      "http://localhost:5175",
-    ],
-  })
-);
-
+app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static(uploadsDir));
 
@@ -40,7 +32,6 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadsDir);
   },
-
   filename: (req, file, cb) => {
     const extension = path.extname(file.originalname);
     cb(null, `${randomUUID()}${extension}`);
@@ -51,9 +42,7 @@ const upload = multer({ storage });
 
 function readMedia() {
   try {
-    return JSON.parse(
-      fs.readFileSync(mediaFile, "utf8") || "[]"
-    );
+    return JSON.parse(fs.readFileSync(mediaFile, "utf8") || "[]");
   } catch (error) {
     console.error("Error reading media.json:", error);
     return [];
@@ -68,7 +57,6 @@ function saveMedia(media) {
   );
 }
 
-// Correct media type, including older entries with .webm filenames
 function getMediaType(item) {
   const filename = (
     item.originalName ||
@@ -84,13 +72,8 @@ function getMediaType(item) {
   ).toLowerCase();
 
   const videoExtensions = [
-    ".webm",
-    ".mp4",
-    ".mov",
-    ".mkv",
-    ".avi",
-    ".ogv",
-    ".m4v",
+    ".webm", ".mp4", ".mov", ".mkv",
+    ".avi", ".ogv", ".m4v",
   ];
 
   if (
@@ -108,20 +91,14 @@ app.get("/", (req, res) => {
   res.json({ message: "Camera backend is running" });
 });
 
-// Get media, apply search and type filters
+// Get media with search and type filters
 app.get("/api/media", (req, res) => {
   try {
     let media = readMedia();
 
-    const query = String(req.query.q || "")
-      .trim()
-      .toLowerCase();
+    const query = String(req.query.q || "").trim().toLowerCase();
+    const type = String(req.query.type || "all").trim().toLowerCase();
 
-    const type = String(req.query.type || "all")
-      .trim()
-      .toLowerCase();
-
-    // Normalize existing entries without deleting any media
     media = media.map((item) => ({
       ...item,
       type: getMediaType(item),
@@ -157,22 +134,15 @@ app.get("/api/media", (req, res) => {
 app.post("/api/media", upload.single("file"), (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({
-        error: "No file uploaded",
-      });
+      return res.status(400).json({ error: "No file uploaded" });
     }
 
     const media = readMedia();
     const extension = path.extname(req.file.originalname).toLowerCase();
 
     const videoExtensions = [
-      ".webm",
-      ".mp4",
-      ".mov",
-      ".mkv",
-      ".avi",
-      ".ogv",
-      ".m4v",
+      ".webm", ".mp4", ".mov", ".mkv",
+      ".avi", ".ogv", ".m4v",
     ];
 
     const isVideo =
@@ -185,7 +155,7 @@ app.post("/api/media", upload.single("file"), (req, res) => {
       originalName: req.file.originalname,
       mimetype: req.file.mimetype,
       type: isVideo ? "video" : "image",
-      url: `http://localhost:${PORT}/uploads/${req.file.filename}`,
+      url: `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`,
       createdAt: new Date().toISOString(),
     };
 
@@ -195,10 +165,7 @@ app.post("/api/media", upload.single("file"), (req, res) => {
     res.status(201).json(item);
   } catch (error) {
     console.error("Upload error:", error);
-
-    res.status(500).json({
-      error: "Failed to save uploaded media",
-    });
+    res.status(500).json({ error: "Failed to save uploaded media" });
   }
 });
 
@@ -207,14 +174,10 @@ app.delete("/api/media/:id", (req, res) => {
   try {
     const media = readMedia();
 
-    const item = media.find(
-      (entry) => entry.id === req.params.id
-    );
+    const item = media.find((entry) => entry.id === req.params.id);
 
     if (!item) {
-      return res.status(404).json({
-        error: "Media not found",
-      });
+      return res.status(404).json({ error: "Media not found" });
     }
 
     if (item.filename) {
@@ -234,18 +197,14 @@ app.delete("/api/media/:id", (req, res) => {
 
     saveMedia(updatedMedia);
 
-    res.json({
-      message: "Media deleted successfully",
-    });
+    res.json({ message: "Media deleted successfully" });
   } catch (error) {
     console.error("Delete error:", error);
-
-    res.status(500).json({
-      error: "Failed to delete media",
-    });
+    res.status(500).json({ error: "Failed to delete media" });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Backend running at http://localhost:${PORT}`);
+// Start server
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Backend running on port ${PORT}`);
 });
