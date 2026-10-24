@@ -1,10 +1,16 @@
-/* Page Transition Animations */
+/* Page Transition Animations & Global Background */
+body {
+  background-color: #0f172a; /* Dark background */
+  margin: 0;
+}
+
 .gallery-page {
   font-family: system-ui, -apple-system, sans-serif;
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  color: #333;
+  color: #ffffff; /* White text for dark mode */
+  min-height: 100vh;
   transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
 }
 
@@ -42,10 +48,11 @@
 .app-header h1 {
   margin-bottom: 5px;
   margin-top: 0;
+  color: #ffffff;
 }
 
 .app-header p {
-  color: #666;
+  color: #94a3b8; /* Light grayish-blue for subtitle */
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -86,16 +93,16 @@
 .folder-btn {
   padding: 10px 20px;
   border-radius: 14px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #f1f5f9;
-  color: #334155;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.65); /* Original dark glass background */
+  color: #ffffff;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .folder-btn:hover {
-  background: #e2e8f0;
+  background: rgba(30, 41, 59, 0.8);
 }
 
 .folder-btn.active-all {
@@ -128,21 +135,27 @@
   padding: 10px 15px;
   width: 100%;
   max-width: 400px;
-  border: 1px solid #ccc;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.65);
+  color: #ffffff;
   border-radius: 8px;
   font-size: 16px;
 }
 
+.gallery-toolbar input::placeholder {
+  color: #64748b;
+}
+
 /* Messages */
 .message {
-  color: #e11d48;
+  color: #f43f5e;
   font-weight: bold;
 }
 
 .empty {
   text-align: center;
   padding: 50px;
-  color: #666;
+  color: #94a3b8;
 }
 
 /* Media Grid */
@@ -153,17 +166,17 @@
 }
 
 .media-card {
-  background: #fff;
+  background: #1e293b; /* Dark card background */
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-  border: 1px solid #eee;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   transition: transform 0.2s;
 }
 
 .media-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
 }
 
 .media-thumbnail {
@@ -171,7 +184,7 @@
   height: 200px;
   object-fit: cover;
   cursor: pointer;
-  background: #f8f8f8;
+  background: #0f172a;
 }
 
 .media-details {
@@ -181,6 +194,7 @@
 .media-details h3 {
   margin: 0 0 5px 0;
   font-size: 16px;
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -189,7 +203,7 @@
 .media-details p {
   margin: 0 0 15px 0;
   font-size: 12px;
-  color: #888;
+  color: #94a3b8;
 }
 
 /* Buttons */
@@ -205,21 +219,22 @@
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
-  background: #e2e8f0;
-  color: #333;
+  background: #334155;
+  color: #ffffff;
+  transition: background 0.2s;
 }
 
 .media-actions button:hover {
-  background: #cbd5e1;
+  background: #475569;
 }
 
 .media-actions .delete-btn {
-  background: #fee2e2;
-  color: #dc2626;
+  background: rgba(225, 29, 72, 0.2);
+  color: #f43f5e;
 }
 
 .media-actions .delete-btn:hover {
-  background: #fca5a5;
+  background: rgba(225, 29, 72, 0.4);
 }
 
 /* Lightbox / Modal Styles */
@@ -229,7 +244,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: rgba(0, 0, 0, 0.95);
   display: flex;
   flex-direction: column;
   justify-content: center;
