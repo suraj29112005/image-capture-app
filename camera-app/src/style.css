@@ -1,7 +1,3 @@
-/* =================================
-   CAMERA APP - SMARTPHONE STUDIO PRO
-================================= */
-
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 * {
@@ -38,7 +34,7 @@ select {
   font: inherit;
 }
 
-/* Main layout */
+
 
 .app {
   min-height: 100vh;
@@ -53,7 +49,6 @@ select {
   gap: 20px;
 }
 
-/* Heading */
 
 h1 {
   font-size: clamp(26px, 4vw, 38px);
@@ -65,7 +60,7 @@ h1 {
   -webkit-text-fill-color: transparent;
 }
 
-/* Main camera panel */
+
 
 .camera-container {
   width: 100%;
@@ -84,7 +79,6 @@ h1 {
   gap: 16px;
 }
 
-/* Camera Header */
 
 .camera-header {
   display: flex;
@@ -93,7 +87,6 @@ h1 {
   width: 100%;
 }
 
-/* Camera preview wrapper */
 
 .camera-view {
   position: relative;
@@ -116,7 +109,6 @@ video {
   transition: transform 0.1s ease-out;
 }
 
-/* Grid Overlay */
 
 .grid-overlay {
   position: absolute;
@@ -131,7 +123,7 @@ video {
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-/* Countdown Overlay */
+
 
 .countdown-overlay {
   position: absolute;
@@ -153,7 +145,6 @@ video {
   100% { transform: scale(1.15); opacity: 1; }
 }
 
-/* Horizontal Advanced Controls Bar */
 
 .horizontal-controls-bar {
   display: flex;
@@ -212,7 +203,6 @@ video {
   height: 16px;
 }
 
-/* Main Bottom Action Bar */
 
 .bottom-action-bar {
   display: flex;
@@ -222,7 +212,6 @@ video {
   padding: 0 10px;
 }
 
-/* Recent Photo Thumbnail Preview */
 
 .thumbnail-preview {
   width: 52px;
@@ -257,7 +246,7 @@ video {
   font-weight: 600;
 }
 
-/* Take Photo Button (Round Shutter) */
+
 
 .shutter-btn {
   width: 76px;
@@ -305,7 +294,7 @@ video {
   transform: none !important;
 }
 
-/* Recording / Gallery / Flip Buttons */
+
 
 .record-btn, .gallery-btn, .flip-btn {
   padding: 12px 18px;
@@ -345,7 +334,7 @@ video {
   transform: translateY(-2px);
 }
 
-/* Status message */
+
 
 .status {
   width: 100%;

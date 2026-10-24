@@ -16,7 +16,7 @@ export default function App() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Advanced States & Features
+
   const [zoom, setZoom] = useState(1);
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
@@ -24,9 +24,9 @@ export default function App() {
   const [lastCapturedImage, setLastCapturedImage] = useState(null);
   const [facingMode, setFacingMode] = useState("user");
   const [showGrid, setShowGrid] = useState(false);
-  const [timerSetting, setTimerSetting] = useState("0"); // "0" means off, "3" means 3 seconds
+  const [timerSetting, setTimerSetting] = useState("0"); 
   const [countdown, setCountdown] = useState(null);
-  const [aspectRatio, setAspectRatio] = useState("auto"); // "auto", "4:3", "1:1", "16:9"
+  const [aspectRatio, setAspectRatio] = useState("auto"); 
 
   useEffect(() => {
     let mounted = true;
@@ -107,7 +107,7 @@ export default function App() {
     return response.json();
   }
 
-  // Handle Photo Capture (Checks if timer is enabled or instant)
+ 
   function handleCaptureClick() {
     if (!videoRef.current || !canvasRef.current || busy || countdown !== null) return;
 
@@ -127,7 +127,7 @@ export default function App() {
         }
       }, 1000);
     } else {
-      executeTakePhoto(); // Instant click if timer is OFF ("0")
+      executeTakePhoto(); 
     }
   }
 
@@ -148,7 +148,7 @@ export default function App() {
     let sWidth = videoWidth;
     let sHeight = videoHeight;
 
-    // Calculate cropping based on selected aspect ratio
+  
     if (aspectRatio === "4:3") {
       const targetRatio = 4 / 3;
       const currentRatio = videoWidth / videoHeight;
@@ -313,7 +313,7 @@ export default function App() {
     return f;
   };
 
-  // Maps aspect ratio state to CSS container styling
+  
   const getAspectRatioStyle = () => {
     switch (aspectRatio) {
       case "4:3":
@@ -323,7 +323,7 @@ export default function App() {
       case "16:9":
         return { aspectRatio: "16 / 9", overflow: "hidden" };
       default:
-        return {}; // Auto / Full
+        return {}; 
     }
   };
 
@@ -352,7 +352,6 @@ export default function App() {
           </button>
         </header>
 
-        {/* Camera Preview */}
         <div className="camera-view" style={getAspectRatioStyle()}>
           <video
             ref={videoRef}
@@ -368,7 +367,6 @@ export default function App() {
             }}
           />
 
-          {/* Grid Lines Overlay */}
           {showGrid && (
             <div className="grid-overlay">
               <div className="grid-line"></div>
@@ -383,7 +381,6 @@ export default function App() {
             </div>
           )}
 
-          {/* Countdown Timer Overlay */}
           {countdown !== null && (
             <div className="countdown-overlay">
               {countdown}
@@ -402,7 +399,6 @@ export default function App() {
 
         <canvas ref={canvasRef} hidden />
 
-        {/* Horizontal Advanced Controls Bar (Zoom, Brightness, Contrast, Filter, Grid, Timer, Aspect Ratio) */}
         <div className="horizontal-controls-bar">
           <div className="control-pill">
             <label>Ratio:</label>
@@ -487,7 +483,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Bottom Action Bar: Thumbnail Preview, Round Shutter, Recording Button */}
+
         <div className="bottom-action-bar">
           <div
             className="thumbnail-preview"
