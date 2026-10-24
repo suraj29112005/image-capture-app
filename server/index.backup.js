@@ -15,7 +15,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const BACKEND_URL = "https://photo-app-27wa.onrender.com";
 
-// Cloudinary reads CLOUDINARY_URL from environment variables.
+
 cloudinary.config();
 
 const uploadsDir = path.join(__dirname, "uploads");
@@ -117,7 +117,7 @@ app.get("/", (req, res) => {
   res.json({ message: "Camera backend is running" });
 });
 
-// Get media with search and type filters
+
 app.get("/api/media", (req, res) => {
   try {
     let media = readMedia();
@@ -174,7 +174,7 @@ app.get("/api/media", (req, res) => {
   }
 });
 
-// Upload photo or video to Cloudinary
+
 app.post("/api/media", upload.single("file"), async (req, res) => {
   const tempFile = req.file?.path;
 
@@ -218,7 +218,7 @@ app.post("/api/media", upload.single("file"), async (req, res) => {
   }
 });
 
-// Secure restore endpoint: preserves IDs and uploads recovered files to Cloudinary
+
 app.post(
   "/api/restore",
   (req, res, next) => {
@@ -311,7 +311,7 @@ app.post(
   }
 );
 
-// Delete media from Cloudinary and metadata
+
 app.delete("/api/media/:id", async (req, res) => {
   try {
     const media = readMedia();
@@ -323,7 +323,7 @@ app.delete("/api/media/:id", async (req, res) => {
       return res.status(404).json({ error: "Media not found" });
     }
 
-    // Delete from Cloudinary when this record has a Cloudinary public ID.
+    
     if (
       item.filename &&
       item.url &&
@@ -336,7 +336,7 @@ app.delete("/api/media/:id", async (req, res) => {
         resource_type: resourceType,
       });
     } else if (item.filename) {
-      // Legacy files may still be stored locally.
+      
       const filePath = path.join(
         uploadsDir,
         path.basename(item.filename)

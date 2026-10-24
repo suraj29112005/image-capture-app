@@ -15,7 +15,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const BACKEND_URL = "https://photo-app-27wa.onrender.com";
 
-cloudinary.config(); // Ye apne aap process.env.CLOUDINARY_URL utha lega
+cloudinary.config(); 
 
 const uploadsDir = path.join(__dirname, "uploads");
 const mediaFile = path.join(__dirname, "media.json");
@@ -29,7 +29,7 @@ if (!fs.existsSync(mediaFile)) {
   fs.writeFileSync(mediaFile, "[]", "utf8");
 }
 
-// 🛑 CORS Update: Ab koi frontend block nahi hoga
+
 app.use(cors({
     origin: '*', 
     methods: ['GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'],
@@ -122,7 +122,7 @@ app.get("/", (req, res) => {
   res.json({ message: "Camera backend is running" });
 });
 
-// Get local media and existing Cloudinary media.
+
 app.get("/api/media", async (req, res) => {
   try {
     const localMedia = readMedia();
@@ -237,7 +237,7 @@ app.get("/api/media", async (req, res) => {
   }
 });
 
-// Upload photo or video to Cloudinary.
+
 app.post("/api/media", upload.single("file"), async (req, res) => {
   const tempFile = req.file?.path;
 
@@ -281,7 +281,6 @@ app.post("/api/media", upload.single("file"), async (req, res) => {
   }
 });
 
-// Secure restore endpoint
 app.post(
   "/api/restore",
   (req, res, next) => {
@@ -374,7 +373,6 @@ app.post(
   }
 );
 
-// Delete media from Cloudinary and metadata.
 app.delete("/api/media/:id", async (req, res) => {
   try {
     const media = readMedia();
@@ -402,7 +400,7 @@ app.delete("/api/media/:id", async (req, res) => {
           resourceType = candidate;
           break;
         } catch {
-          // Try the other resource type.
+  
         }
       }
 
