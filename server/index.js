@@ -1,4 +1,3 @@
-
 import express from "express";
 import cors from "cors";
 import multer from "multer";
@@ -16,7 +15,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const BACKEND_URL = "https://photo-app-27wa.onrender.com";
 
-cloudinary.config();
+cloudinary.config(); // Ye apne aap process.env.CLOUDINARY_URL utha lega
 
 const uploadsDir = path.join(__dirname, "uploads");
 const mediaFile = path.join(__dirname, "media.json");
@@ -30,7 +29,13 @@ if (!fs.existsSync(mediaFile)) {
   fs.writeFileSync(mediaFile, "[]", "utf8");
 }
 
-app.use(cors());
+// 🛑 CORS Update: Ab koi frontend block nahi hoga
+app.use(cors({
+    origin: '*', 
+    methods: ['GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-restore-secret']
+}));
+
 app.use(express.json());
 app.use("/uploads", express.static(uploadsDir));
 
@@ -118,7 +123,6 @@ app.get("/", (req, res) => {
 });
 
 // Get local media and existing Cloudinary media.
-// This route does not upload files or modify media.json.
 app.get("/api/media", async (req, res) => {
   try {
     const localMedia = readMedia();
@@ -277,7 +281,7 @@ app.post("/api/media", upload.single("file"), async (req, res) => {
   }
 });
 
-// Secure restore endpoint: preserves IDs and uploads recovered files.
+// Secure restore endpoint
 app.post(
   "/api/restore",
   (req, res, next) => {
@@ -376,7 +380,6 @@ app.delete("/api/media/:id", async (req, res) => {
     const media = readMedia();
     const requestedId = req.params.id;
 
-    // Handle records discovered directly from Cloudinary.
     if (requestedId.startsWith("cloudinary_")) {
       const encodedId = requestedId.slice("cloudinary_".length);
       const publicId = Buffer.from(encodedId, "base64url").toString("utf8");
@@ -425,7 +428,6 @@ app.delete("/api/media/:id", async (req, res) => {
       });
     }
 
-    // Handle records already saved in media.json.
     const item = media.find(
       (entry) => String(entry.id) === requestedId
     );

@@ -1,4 +1,3 @@
-
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,6 +18,12 @@ let success = 0;
 let failed = 0;
 
 for (const item of media) {
+  // Jo file pehle se Cloudinary par hai, usko dobara upload hone se rokne ke liye ye check add kiya hai
+  if (item.url && item.url.includes("res.cloudinary.com")) {
+    console.log("ALREADY ON CLOUDINARY (SKIPPED):", item.filename || item.id);
+    continue;
+  }
+
   const filename = path.basename(item.filename || "");
   const filePath = path.join(uploadsDir, filename);
 

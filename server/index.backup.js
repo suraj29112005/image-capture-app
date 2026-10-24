@@ -1,4 +1,3 @@
-
 import express from "express";
 import cors from "cors";
 import multer from "multer";
@@ -31,7 +30,12 @@ if (!fs.existsSync(mediaFile)) {
   fs.writeFileSync(mediaFile, "[]", "utf8");
 }
 
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-restore-secret']
+}));
+
 app.use(express.json());
 app.use("/uploads", express.static(uploadsDir));
 
