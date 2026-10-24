@@ -1,6 +1,5 @@
-/* Page Transition Animations & Global Background */
 body {
-  background-color: #0f172a; /* Dark background */
+  background-color: #0f172a; 
   margin: 0;
 }
 
@@ -9,7 +8,7 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  color: #ffffff; /* White text for dark mode */
+  color: #ffffff;
   min-height: 100vh;
   transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
 }
@@ -21,7 +20,7 @@ body {
 .page-exit {
   opacity: 0;
   transform: scale(0.9) translateY(-30px);
-  pointer-events: none; /* Prevent clicks during transition */
+  pointer-events: none; 
 }
 
 @keyframes fadeInZoom {
@@ -35,7 +34,6 @@ body {
   }
 }
 
-/* Header & Camera Button Layout */
 .app-header {
   display: flex;
   justify-content: space-between;
@@ -52,7 +50,7 @@ body {
 }
 
 .app-header p {
-  color: #94a3b8; /* Light grayish-blue for subtitle */
+  color: #94a3b8;
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -82,7 +80,7 @@ body {
   transform: translateY(1px);
 }
 
-/* Folder Tabs */
+
 .folder-tabs-bar {
   display: flex;
   gap: 10px;
@@ -94,7 +92,7 @@ body {
   padding: 10px 20px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(15, 23, 42, 0.65); /* Original dark glass background */
+  background: rgba(15, 23, 42, 0.65); 
   color: #ffffff;
   font-weight: 600;
   cursor: pointer;
@@ -126,7 +124,7 @@ body {
   box-shadow: 0 4px 15px rgba(244, 63, 94, 0.4);
 }
 
-/* Toolbar */
+
 .gallery-toolbar {
   margin-bottom: 20px;
 }
@@ -146,7 +144,7 @@ body {
   color: #64748b;
 }
 
-/* Messages */
+
 .message {
   color: #f43f5e;
   font-weight: bold;
@@ -158,7 +156,7 @@ body {
   color: #94a3b8;
 }
 
-/* Media Grid */
+
 .media-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -166,7 +164,7 @@ body {
 }
 
 .media-card {
-  background: #1e293b; /* Dark card background */
+  background: #1e293b; 
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
@@ -206,7 +204,7 @@ body {
   color: #94a3b8;
 }
 
-/* Buttons */
+
 .media-actions {
   display: flex;
   gap: 10px;
@@ -237,7 +235,7 @@ body {
   background: rgba(225, 29, 72, 0.4);
 }
 
-/* Lightbox / Modal Styles */
+
 .modal-overlay {
   position: fixed;
   top: 0;

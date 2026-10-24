@@ -11,7 +11,7 @@ export default function App() {
   const [type, setType] = useState("all");
   const [message, setMessage] = useState("");
   
-  // Lightbox, Zoom, & Transition State
+
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [zoom, setZoom] = useState(1);
   const [isExiting, setIsExiting] = useState(false);
@@ -93,12 +93,12 @@ export default function App() {
     setZoom(1);
   }
 
-  // Camera transition function
+
   function goToCamera() {
     setIsExiting(true);
     setTimeout(() => {
       window.location.href = "https://camera-frontend-70e6.onrender.com";
-    }, 500); // 500ms matches the CSS transition time
+    }, 500);
   }
 
   return (
@@ -109,7 +109,6 @@ export default function App() {
           <p>Your photos and videos in one place.</p>
         </div>
         
-        {/* Camera Transition Button */}
         <button onClick={goToCamera} className="camera-btn">
           📸 Open Camera
         </button>
